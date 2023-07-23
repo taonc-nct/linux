@@ -1,7 +1,7 @@
 `IPTABLES IN CENTOS 7`
 
 # 1. Introduction:
-Iptables is a powerful tool used to manage the Linux firewall. It is used to set up, maintain, and inspect the tables of IP packet filter rules in the Linux kernel. One of the most common use cases of iptables is to block incoming access from specific IP addresses.
+- Iptables is a powerful tool used to manage the Linux firewall. It is used to set up, maintain, and inspect the tables of IP packet filter rules in the Linux kernel. One of the most common use cases of iptables is to block incoming access from specific IP addresses.
 ```
 --append  -A Append to chain
 --delete  -D Delete matching rule from chain
@@ -22,6 +22,15 @@ OUTPUT = Outgoing Access
 -j = Target Action
 DROP = Block action
 ```
+- Types of Chains of iptables
+```
+INPUT: INPUT chains define rules set for packets intended to sockets of localhost.
+FORWARD: FORWARD chains used for various packets routed from the device.
+OUTPUT: OUTPUT chains used for locally produced packets, specified to be set outside.
+PREROUTING: PREROUTING chains are used for changing packets as these packets arrive.
+POSTROUTING: POSTROUTING chains are used for changing packets as these packets are leaving.
+```
+
 # 2. How to Install Iptables on CentOS 7
 - Starting with CentOS 7, FirewallD replaces iptables as the default firewall management tool.
 FirewallD is a complete firewall solution that can be controlled with a command-line utility called firewall-cmd. If you are more comfortable with the Iptables command line syntax, then you can disable FirewallD and go back to the classic iptables setup.
