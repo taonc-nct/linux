@@ -1,6 +1,6 @@
-`IPTABLES IN CENTOS 7`
+# `IPTABLES IN CENTOS 7`
 
-# 1. Introduction:
+# `Introduction:`
 - Iptables is a powerful tool used to manage the Linux firewall. It is used to set up, maintain, and inspect the tables of IP packet filter rules in the Linux kernel. One of the most common use cases of iptables is to block incoming access from specific IP addresses.
 ```
 --append  -A Append to chain
@@ -72,21 +72,55 @@ FirewallD is a complete firewall solution that can be controlled with a command-
     sudo iptables -nvL
     sudo ip6tables -nvL
     ```
-   - 6. By default only the SSH port 22 is open. The output
+    
+   - 6. run *vi /etc/syconfig/iptables* :
     ```
-    Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
- pkts bytes target     prot opt in     out     source               destination         
- 5400 6736K ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+    # sample configuration for iptables service
+    # you can edit this manually or use system-config-firewall
+    # please do not ask us to add additional ports/services to this default configuration
+    *filter
+    :INPUT ACCEPT [0:0]
+    :FORWARD ACCEPT [0:0]
+    :OUTPUT ACCEPT [0:0]
+    -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+    -A INPUT -p icmp -j ACCEPT
+    -A INPUT -i lo -j ACCEPT
+    -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
+    -A INPUT -j REJECT --reject-with icmp-host-prohibited
+    -A FORWARD -j REJECT --reject-with icmp-host-prohibited
+    COMMIT
+    ```
 
-    0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0           
-    2   148 ACCEPT     all  --  lo     *       0.0.0.0/0            0.0.0.0/0           
-    3   180 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            state NEW tcp dpt:22
-    0     0 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-host-prohibited
+## `Config iptables`
 
-Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
- pkts bytes target     prot opt in     out     source               destination         
-    0     0 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-host-prohibited
+- Block ssh from one IP:
+  ``` 
+  -A INPUT -s <ip> -p tcp  -m state --state  NEW -m  tcp --dport 22 -j DROP
+  ```
+  - -A : APPEND
+  - INPUT: prevent from outside to machine
+  - s: source address
+  - -p, --protocol [!] protocol can be one udp, tcp, icmp
+  - dport:  --destination-port 
+  - state: This module, when combined with connection tracking, allows access to the connection tracking state for this packet.--state stateWhere state is a comma separated list of the connection states to match. Possible states are INVALID meaning that the packet could not be identified for some reason which includes running out of memory and ICMP errors which don't correspond to any known connection, ESTABLISHED meaning that the packet is associated with a connection which has seen packets in both directions, NEW meaning that the packet has started a new connection, or otherwise associated with a connection which has not seen packets in both directions, and RELATED meaning that the packet is starting a new connection, but is associated with an existing connection, such as an FTP data transfer, or an ICMP error.
+  - **note:**
+  ```
+  NEW: Khi có một gói tin mới được gởi tới và không nằm trong bất kỳ connection nào hiện có, hệ thống sẽ khởi tạo một kết nối mới và gắn nhãn NEW cho kết nối này. Nhãn này dùng cho cả TCP và UDP.
 
-Chain OUTPUT (policy ACCEPT 4298 packets, 295K bytes)
- pkts bytes target     prot opt in     out     source               destination     
-   ```
+  ESTABLISHED: Trạng thái chuyển NEW to ESTABLISHED khi nhận được phản hồi hợp lệ từ phía đối diện của kết nối. Với kết nối TCP, nó chính là SYN/ACK và với UDP/ICMP, là phản hồi mà ở đó địa chỉ nguồn và địa chỉ đích được hoán đổi.
+  
+  RELATED: Gói tin được gởi tới không thuộc về một kết nối hiện có nhưng có liên quan đến một kết nối đang có trên hệ thống. Đây có thể là một kết nối phụ hỗ trợ cho kết nối chính, ví dụ như giao thức FTP có kết nối chính dùng để chuyển lệnh và kết nối phụ dùng để truyền dữ liệu.
+
+  INVALID: Gói tin được đánh dấu INVALID khi gói tin này không có bất cứ quan hệ gì với các kết nối đang có sẵn, không thích hợp để khởi tạo một kết nối mới hoặc đơn giản là không thể xác định được gói tin này, không tìm được kết quả trong bảng định tuyến.
+
+  UNTRACKED: Gói tin có thể được gắn hãn UNTRACKED nếu gói tin này đi qua bảng raw và được xác định ( gắn cờ ) là không cần theo dõi gói này trong bảng connection tracking.
+
+  SNAT: Đó là trạng thái sẽ được đánh dấu khi gói tin được chỉnh sửa phần source address bởi quá trình NAT. Nó được dùng bởi hệ thống Connection tracking để thay đổi lại source address ở gói tin phản hồi lại.
+
+  DNAT: Đó là trạng thái sẽ được đánh dấu khi gói tin được chỉnh sửa phần destination address bởi quá trình NAT. Nó được dùng bởi hệ thống Connection tracking để thay đổi lại destination address ở gói tin phản hồi lại.
+  ```
+
+- Iptables setting multiple multiports in one rule:
+  ```
+  -A INPUT -s <IP> -p tcp -m state --state NEW -m tcp -m multiport --dports 22,23,24 -j ACCEPT
+  ```
