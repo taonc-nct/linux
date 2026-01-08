@@ -69,3 +69,23 @@ Server A → DNS Query → DNS Server
 DNS Server → trả về A record (IP)
 Server A → dùng IP kết nối
 Layer 7, domain → IP, không ping trực tiếp
+------------------------------------
+Layer 3 – Network Layer (IP)
+So sánh: Địa chỉ nhà / công ty
+Bạn có 1 phong bì với địa chỉ người nhận:
+10 Downing St, London, UK
+Người vận chuyển (router / bưu điện) chỉ nhìn địa chỉ này để đưa phong bì tới đúng tòa nhà / đúng thành phố
+Họ không quan tâm trong tòa nhà có ai, hay bạn muốn gửi cho phòng nào, họ chỉ đưa phong bì tới “máy / subnet đúng”
+Trong mạng: L3 chỉ biết IP đích, dùng routing để forward packet tới máy đó.
+------------------------------------
+Layer 4 – Transport Layer (TCP/UDP)
+So sánh: Tên người nhận / phòng ban trong tòa nhà
+Một khi phong bì đã tới đúng tòa nhà (IP đúng), bạn cần ghi rõ gửi cho ai / phòng nào để đúng người nhận mở.
+Ví dụ: “Gửi cho John, phòng 101”
+Trong mạng: port number giống như “phòng số 101”
+Redis → port 6379
+HTTP → port 80
+SSH → port 22
+TCP / UDP đảm bảo:
+TCP: Người nhận mở phong bì và báo lại “tôi nhận rồi”
+UDP: Không cần báo, chỉ bỏ phong bì xuống thôi
