@@ -1,0 +1,71 @@
+Subnet A (10.0.32.0/24)
+┌──────────────────────────────────┐
+│                                  │
+│  Server A                        │
+│  IP: 10.0.32.155                 │
+│        │                         │
+│        │ (packet)                │
+│        ▼                         │
+│  Gateway A (Router Interface)    │
+│  IP: 10.0.32.1                   │
+└───────────────┬──────────────────┘
+                │
+                │   (routing)
+                │
+┌───────────────┴──────────────────┐
+│  Router / Firewall / L3 Switch   │
+└───────────────┬──────────────────┘
+                │
+┌───────────────┴──────────────────┐
+│  Gateway B (Router Interface)    │
+│  IP: 10.0.40.1                   │
+│        │                         │
+│        ▼                         │
+│  Server B                        │
+│  IP: 10.0.40.20                  │
+└──────────────────────────────────┘
+Subnet B (10.0.40.0/24)
+------------------------------------
+Subnet 10.0.32.0/24
+┌─────────────────────────────────┐
+│                                 │
+│   Server A        Server B      │
+│ 10.0.32.155  ↔  10.0.32.200     │
+│        │           │            │
+│        └──── Switch L2 ─────────┘
+│                                 │
+└─────────────────────────────────┘
+------------------------------------
+
+| Tool       | Layer | Kết nối kiểm tra | Chỉ đường | Port/service | DNS |
+| ---------- | ----- | ---------------- | --------- | ------------ | --- |
+| Ping       | L3    | ✅               | ❌       | ❌           | ❌ |
+| Traceroute | L3    | ✅               | ✅       | ❌           | ❌ |
+| Telnet     | L4    | ✅               | ❌       | ✅           | ❌ |
+| nslookup   | L7    | ❌               | ❌       | ❌           | ✅ |
+
+-------------------------------------
+CÁCH HOẠT ĐỘNG THEO SƠ ĐỒ
+
+Ping Server B
+Server A → ICMP Echo → Router → Server B
+Server B → ICMP Reply → Router → Server A
+Layer 3, kiểm tra kết nối mạng
+
+Traceroute đến Server B
+Server A → TTL=1 → Router 1 → "Time Exceeded" trả về
+Server A → TTL=2 → Router 2 → "Time Exceeded"
+...
+Server A → TTL=n → Server B → Echo Reply
+Layer 3, cho biết path qua router
+
+Telnet Server B:6379
+Server A → TCP SYN → Router → Server B:6379
+Server B → TCP SYN/ACK → Router → Server A
+Layer 4, kiểm tra service / port
+
+nslookup domain.com
+Server A → DNS Query → DNS Server
+DNS Server → trả về A record (IP)
+Server A → dùng IP kết nối
+Layer 7, domain → IP, không ping trực tiếp
